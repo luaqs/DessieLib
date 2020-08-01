@@ -2,6 +2,7 @@ package me.dessie.DessieLib;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -11,6 +12,7 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class Base64 {
 
@@ -35,7 +37,23 @@ public class Base64 {
         }
     }
 
-    public ItemStack[] fromBase64(String data) throws IOException {
+    public String toBase64(ItemStack item) throws IllegalStateException {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
+
+            // Save every element in the list
+            dataOutput.writeObject(item);
+
+            // Serialize that array
+            dataOutput.close();
+            return Base64Coder.encodeLines(outputStream.toByteArray());
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to save item stack.", e);
+        }
+    }
+
+    public ItemStack[] fromBase64(String data) {
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
             BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
@@ -48,10 +66,27 @@ public class Base64 {
 
             dataInput.close();
             return inventory.getContents();
+        } catch (ClassNotFoundException | IOException e) {
+            try {
+                throw new IOException("Unable to decode class type.", e);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
+
+    public ItemStack fromBase64Item(String data) throws IOException {
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
+            BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
+
+            dataInput.close();
+            return (ItemStack) dataInput.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException("Unable to decode class type.", e);
         }
     }
-
-
 }

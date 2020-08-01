@@ -8,4 +8,7 @@ public class Colors {
         string = ChatColor.translateAlternateColorCodes('&', string);
         return string;
     }
+
+
+
 }
