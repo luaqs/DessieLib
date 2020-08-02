@@ -4,6 +4,9 @@ import me.dessie.DessieLib.Colors;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -14,10 +17,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ScoreboardAPI {
+public class ScoreboardAPI implements Listener {
 
     static Map<Player, ScoreboardAPI> boards = new HashMap<>();
     static JavaPlugin plugin;
+    static boolean registeredEvents = false;
 
     Scoreboard scoreboard;
     Player player;
@@ -26,19 +30,31 @@ public class ScoreboardAPI {
     public ScoreboardAPI(Player player, String name) {
         if(plugin == null) {
             throw new NullPointerException("You need to register your plugin before creating a new ScoreboardAPI!");
+        } else {
+
+            if(!Bukkit.isPrimaryThread()) {
+                throw new IllegalStateException("Unable to register a new Scoreboard in an async thread!");
+            }
+
+            //Register the events.
+            if(!registeredEvents) {
+                plugin.getServer().getPluginManager().registerEvents(this, plugin);
+            }
+
+            this.player = player;
+            this.scoreboard = plugin.getServer().getScoreboardManager().getNewScoreboard();
+
+            //Setup the objectives.
+            this.objective = this.scoreboard.registerNewObjective("Sidebar", "dummy", ChatColor.stripColor(Colors.color(name)));
+            this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+            this.objective.setDisplayName(Colors.color(name));
+
+            //Set the scoreboard for the player.
+            this.player.setScoreboard(this.scoreboard);
+            ;
+
+            boards.put(player, this);
         }
-
-        this.player = player;
-        this.scoreboard = plugin.getServer().getScoreboardManager().getNewScoreboard();
-
-        //Setup the objectives.
-        this.objective = this.scoreboard.registerNewObjective("Sidebar", "dummy", ChatColor.stripColor(Colors.color(name)));
-        this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-        this.objective.setDisplayName(Colors.color(name));
-
-        //Set the scoreboard for the player.
-        this.player.setScoreboard(this.scoreboard);
-        boards.put(player, this);
     }
 
     public Scoreboard getScoreboard() { return this.scoreboard; }
@@ -106,4 +122,10 @@ public class ScoreboardAPI {
     public static void register(JavaPlugin yourPlugin) {
         plugin = yourPlugin;
     }
+
+    @EventHandler
+    public void onLeave(PlayerQuitEvent event) {
+        boards.remove(player);
+    }
+
 }
