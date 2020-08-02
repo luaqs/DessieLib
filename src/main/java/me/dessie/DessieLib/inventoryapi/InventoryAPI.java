@@ -16,8 +16,11 @@ import org.bukkit.plugin.Plugin;
 public class InventoryAPI implements Listener {
 
     private Plugin plugin;
+    private static boolean registered = false;
+
     public InventoryAPI(Plugin plugin) {
         this.plugin = plugin;
+        registered = true;
     }
 
     static String color(String s) {
@@ -93,4 +96,9 @@ public class InventoryAPI implements Listener {
             }
         }
     }
+
+    public static boolean isRegistered() {
+        return registered;
+    }
+
 }

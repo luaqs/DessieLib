@@ -1,6 +1,5 @@
 package me.dessie.DessieLib.inventoryapi;
 
-import me.dessie.DessieLib.compatibility.XMaterial;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -11,7 +10,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ItemBuilder {
@@ -188,7 +189,7 @@ public class ItemBuilder {
         return this;
     }
 
-    public static ItemStack createHeadItem(OfflinePlayer player, int amount, String name, List<String> lore) {
+    public static ItemStack createHeadItem(OfflinePlayer player, int amount, String name, String... lore) {
         ItemStack item = buildItem(Material.PLAYER_HEAD, amount, name, lore);
 
         SkullMeta meta = (SkullMeta) item.getItemMeta();
@@ -199,7 +200,7 @@ public class ItemBuilder {
     }
 
     //Build an ItemStack
-    public static ItemStack buildItem(Material material, int amount, String name, List<String> lore) {
+    public static ItemStack buildItem(Material material, int amount, @Nullable String name, @Nullable List<String> lore) {
         ItemStack item = new ItemStack(material, amount);
         ItemMeta meta = item.getItemMeta();
 
@@ -217,6 +218,11 @@ public class ItemBuilder {
 
         item.setItemMeta(meta);
         return item;
+    }
+
+    //Build an ItemStack
+    public static ItemStack buildItem(Material material, int amount, @Nullable String name, String... lore) {
+        return buildItem(material, amount, name, Arrays.asList(lore));
     }
 
     //Internal method.

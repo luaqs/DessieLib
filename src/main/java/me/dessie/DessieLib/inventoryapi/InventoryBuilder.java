@@ -29,11 +29,15 @@ public class InventoryBuilder {
     public HashMap<Integer, ItemBuilder> items = new HashMap<>();
 
     public InventoryBuilder(int size, String name) {
-        this.size = size;
-        this.name = name;
-        this.page = 0;
+        if(InventoryAPI.isRegistered()) {
+            this.size = size;
+            this.name = name;
+            this.page = 0;
 
-        this.pages.add(this);
+            this.pages.add(this);
+        } else {
+            throw new NullPointerException("You need to register the listeners with a new InventoryAPI before creating InventoryBuilders!");
+        }
     }
 
     public String getName() {
@@ -138,6 +142,8 @@ public class InventoryBuilder {
         return null;
     }
 
+
+
     public ItemBuilder setItem(ItemStack item, int slot, boolean update) {
         if(item == null || item.getType() == Material.AIR) {
             this.items.remove(slot);
@@ -165,6 +171,32 @@ public class InventoryBuilder {
 
             return item;
         }
+    }
+
+    public InventoryBuilder setItems(ItemBuilder item, boolean update, Integer... slots) {
+        for(int i : slots) {
+            setItem(item, i, update);
+        }
+        return this;
+    }
+
+    public InventoryBuilder setItems(ItemStack item, boolean update, Integer... slots) {
+        for(int i : slots) {
+            setItem(item, i, update);
+        }
+        return this;
+    }
+
+    //Sets a new ItemBuilder in the slot. Returns this new ItemBuilder.
+    //If item is null or AIR, the slot will be removed. Returns null.
+    public InventoryBuilder setItems(ItemBuilder item, Integer... slots) {
+        return setItems(item, true, slots);
+    }
+
+    //Sets a new ItemBuilder in the slot. Returns this new ItemBuilder.
+    //If item is null or AIR, the slot will be removed. Returns null.
+    public InventoryBuilder setItems(ItemStack item, Integer... slots) {
+        return setItems(item, true, slots);
     }
 
     //Sets a new ItemBuilder in the slot. Returns this new ItemBuilder.
@@ -388,10 +420,10 @@ public class InventoryBuilder {
     //Sets the page arrows in the Inventory in the correct places.
     //Used if you need to force the arrows at a specific time.
     public InventoryBuilder setPageArrows() {
-        this.setItem(ItemBuilder.buildItem(Material.ARROW, 1, "&cNext", null), this.getSize() - 1)
+        this.setItem(ItemBuilder.buildItem(Material.ARROW, 1, "&cNext"), this.getSize() - 1)
                 .onClick(this::nextPage).cancel();
 
-        this.setItem(ItemBuilder.buildItem(Material.ARROW, 1, "&cPrevious", null), this.getSize() - 9)
+        this.setItem(ItemBuilder.buildItem(Material.ARROW, 1, "&cPrevious"), this.getSize() - 9)
                 .onClick(this::previousPage).cancel();
 
         return this;
@@ -430,55 +462,55 @@ public class InventoryBuilder {
     //Puts the specified ItemBuilder in the Inventory borders.
     //Inventory must be atleast 27 in size.
     public InventoryBuilder createBorder(ItemBuilder item) {
-        if (this.getSize() > 18) {
-            int[] edgeSlots54 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53};
-            int[] edgeSlots45 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44};
-            int[] edgeSlots36 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
-            int[] edgeSlots27 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
+        if(this.getSize() < 18) {
+            throw new IllegalStateException("Inventory size must be atleast 27 to add borders!");
+        }
 
-            switch (this.getSize()) {
-                case 54: {
-                    for (int i : edgeSlots54) {
-                        if(this.getItem(i) == null) {
-                            setItem(item, i);
-                        }
-                    }
-                    break;
-                }
+        int[] edgeSlots54 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53};
+        int[] edgeSlots45 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44};
+        int[] edgeSlots36 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
+        int[] edgeSlots27 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
 
-                case 45: {
-                    for (int i : edgeSlots45) {
-                        if(this.getItem(i) == null) {
-                            setItem(item, i);
-                        }
+        switch (this.getSize()) {
+            case 54: {
+                for (int i : edgeSlots54) {
+                    if (this.getItem(i) == null) {
+                        setItem(item, i);
                     }
-                    break;
                 }
-
-                case 36: {
-                    for (int i : edgeSlots36) {
-                        if(this.getItem(i) == null) {
-                            setItem(item, i);
-                        }
-                    }
-                    break;
-                }
-
-                case 27: {
-                    for (int i : edgeSlots27) {
-                        if(this.getItem(i) == null) {
-                            setItem(item, i);
-                        }
-                    }
-                    break;
-                }
+                break;
             }
 
-            return this;
-        } else {
-            Bukkit.getLogger().log(Level.INFO, "Inventory size must be atleast 27 to add borders!");
-            return this;
+            case 45: {
+                for (int i : edgeSlots45) {
+                    if (this.getItem(i) == null) {
+                        setItem(item, i);
+                    }
+                }
+                break;
+            }
+
+            case 36: {
+                for (int i : edgeSlots36) {
+                    if (this.getItem(i) == null) {
+                        setItem(item, i);
+                    }
+                }
+                break;
+            }
+
+            case 27: {
+                for (int i : edgeSlots27) {
+                    if (this.getItem(i) == null) {
+                        setItem(item, i);
+                    }
+                }
+                break;
+            }
         }
+
+        return this;
+
     }
 
     //Internal method.
