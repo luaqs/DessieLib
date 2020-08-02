@@ -1,4 +1,4 @@
-package me.dessie.DessieLib;
+package me.dessie.DessieLib.base64;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
