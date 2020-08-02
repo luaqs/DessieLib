@@ -71,8 +71,9 @@ public class ScoreboardAPI {
 
     public ScoreboardAPI animateTitle(List<String> animation, int delay) {
         int multiplier = 1;
+
         for(String s : animation) {
-            Bukkit.getScheduler().runTaskTimer(plugin, () -> setTitle(s), 0, delay * multiplier);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> setTitle(s), delay * multiplier);
             multiplier++;
         }
 
@@ -82,7 +83,7 @@ public class ScoreboardAPI {
     public ScoreboardAPI animateScore(List<String> animation, int delay, int score) {
         int multiplier = 1;
         for(String s : animation) {
-            Bukkit.getScheduler().runTaskTimer(plugin, () -> setLine(s, score), 0, delay * multiplier);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> setLine(s, score), delay * multiplier);
             multiplier++;
         }
         return this;
