@@ -189,7 +189,7 @@ public class ItemBuilder {
         return this;
     }
 
-    public static ItemStack createHeadItem(OfflinePlayer player, int amount, String name, String... lore) {
+    public static ItemStack buildSkull(OfflinePlayer player, int amount, String name, String... lore) {
         ItemStack item = buildItem(Material.PLAYER_HEAD, amount, name, lore);
 
         SkullMeta meta = (SkullMeta) item.getItemMeta();
