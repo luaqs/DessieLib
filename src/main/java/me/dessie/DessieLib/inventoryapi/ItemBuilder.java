@@ -11,16 +11,19 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class ItemBuilder {
 
     private InventoryBuilder builder;
     private ItemStack item;
     private Runnable clickEvent = null;
-    private ItemStack swappedItem;
+    private List<ItemStack> cycle = new ArrayList<>();
+
+    //Index of the cycle, where 0 is the item the builder was created with.
+    private int cycleIndex = 0;
+
     private boolean cancel;
     private boolean glowing;
     int slot;
@@ -29,6 +32,7 @@ public class ItemBuilder {
 
     public ItemBuilder(ItemStack item) {
         this.item = item;
+        this.cycle.add(item);
         this.glowing = false;
     }
 
@@ -42,8 +46,10 @@ public class ItemBuilder {
         this.slot = itemBuilder.getSlot();
         this.glowing = itemBuilder.isGlowing();
         this.heldItem = itemBuilder.getHeldItem();
+        this.cycle = itemBuilder.getCycle();
     }
 
+    public List<ItemStack> getCycle() { return cycle; }
     public ItemStack getItem() { return this.item; }
     public InventoryBuilder getBuilder() { return this.builder; }
     public int getSlot() { return this.slot; }
@@ -63,14 +69,11 @@ public class ItemBuilder {
 
     //Check if two ItemBuilders have the same properties.
     public boolean isSimilar(ItemBuilder compare) {
-        if(compare != null) {
-            if(this.getItem().isSimilar(compare.getItem()) && this.isGlowing() == compare.isGlowing()) {
-                if(this.isCancel() == compare.isCancel() && this.getClickEvent() == compare.getClickEvent()) {
-                    if(this.swappedItem != null && compare.swappedItem != null) {
-                        if(this.swappedItem.isSimilar(compare.swappedItem)) {
-                            return true;
-                        }
-                    }
+        if(compare == null) return false;
+
+        if (this.getItem().isSimilar(compare.getItem()) && this.isGlowing() == compare.isGlowing()) {
+            if (this.isCancel() == compare.isCancel() && this.getClickEvent() == compare.getClickEvent()) {
+                if(this.getCycle() == compare.getCycle()) {
                     return true;
                 }
             }
@@ -78,7 +81,6 @@ public class ItemBuilder {
 
         return false;
     }
-
 
     public ItemBuilder setCursorOnClick(ItemStack item) {
         getBuilder().getPlayer().getOpenInventory().setCursor(item);
@@ -155,16 +157,19 @@ public class ItemBuilder {
         return this;
     }
 
-    //Swaps between two ItemStacks
-    public ItemBuilder swap(ItemStack swapWith) {
+    /*
+    Cycles through each item in the list when this ItemBuilder is clicked.
+     */
+    public ItemBuilder cyclesWith(ItemStack... items) {
+        this.cycle = Arrays.asList(items);
+        return this;
+    }
+
+    ItemBuilder swap() {
         InventoryBuilder builder = this.getBuilder();
 
-        if(builder.getClickedItem().getItem().isSimilar(swapWith)) {
-            this.setItem(swappedItem);
-        } else {
-            swappedItem = this.getItem();
-            this.setItem(swapWith);
-        }
+        cycleIndex = cycleIndex + 1 > this.getCycle().size() ? 0 : cycleIndex + 1;
+        this.setItem(this.getCycle().get(cycleIndex));
 
         builder.setItem(this, this.getSlot());
         return this;

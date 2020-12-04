@@ -72,6 +72,8 @@ public class InventoryAPI implements Listener {
                             event.setCancelled(true);
                         }
 
+                        item.swap();
+
                         item.executeClick();
                         return;
                     }

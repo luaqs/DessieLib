@@ -93,22 +93,23 @@ public class ScoreboardAPI implements Listener {
         if(prefix != null && !prefix.equalsIgnoreCase("")) { team.setPrefix(Colors.color(prefix)); }
         if(color != null) { team.setColor(color); }
 
-
         //When we create a team, we want to add all the entries
         //That everyone else has. This can be done by getting a
         //random person's board that has this team, and adding all their
         //entries.
         if(boards.size() > 1) {
-            ScoreboardAPI randomBoard = randomBoard();
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                ScoreboardAPI randomBoard = randomBoard();
 
-            //Scoreboard that we got cannot be the same as this one.
-            while (randomBoard.getPlayer() == this.player) {
-                randomBoard = randomBoard();
-            }
+                //Scoreboard that we got cannot be the same as this one.
+                while (randomBoard.getPlayer() == this.player || !randomBoard.hasTeam(team.getName())) {
+                    randomBoard = randomBoard();
+                }
 
-            for (String entry : randomBoard.getScoreboard().getTeam(team.getName()).getEntries()) {
-                team.addEntry(entry);
-            }
+                for (String entry : randomBoard.getScoreboard().getTeam(team.getName()).getEntries()) {
+                    team.addEntry(entry);
+                }
+            });
         }
 
         return this;
@@ -177,7 +178,7 @@ public class ScoreboardAPI implements Listener {
     }
 
     public boolean hasTeam(String team) {
-        return this.scoreboard.getTeam(team) != null;
+        return this.scoreboard.getTeams().stream().map(Team::getName).anyMatch(name -> name.equalsIgnoreCase(team));
     }
 
     public Team getTeam(String team) {
