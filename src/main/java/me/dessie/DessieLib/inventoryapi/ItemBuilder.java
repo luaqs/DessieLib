@@ -32,7 +32,6 @@ public class ItemBuilder {
 
     public ItemBuilder(ItemStack item) {
         this.item = item;
-        this.cycle.add(item);
         this.glowing = false;
     }
 
@@ -161,17 +160,10 @@ public class ItemBuilder {
     Cycles through each item in the list when this ItemBuilder is clicked.
      */
     public ItemBuilder cyclesWith(ItemStack... items) {
-        this.cycle = Arrays.asList(items);
-        return this;
-    }
-
-    ItemBuilder swap() {
-        InventoryBuilder builder = this.getBuilder();
-
-        cycleIndex = cycleIndex + 1 > this.getCycle().size() ? 0 : cycleIndex + 1;
-        this.setItem(this.getCycle().get(cycleIndex));
-
-        builder.setItem(this, this.getSlot());
+        List<ItemStack> cycle = new ArrayList<>();
+        cycle.add(this.getItem());
+        cycle.addAll(Arrays.asList(items));
+        this.cycle = cycle;
         return this;
     }
 
@@ -244,6 +236,16 @@ public class ItemBuilder {
         if(this.getBuilder() != null) {
             this.getBuilder().update();
         }
+    }
 
+    void swap() {
+        if(this.getCycle().isEmpty()) return;
+
+        InventoryBuilder builder = this.getBuilder();
+
+        this.cycleIndex = this.cycleIndex + 1 >= this.getCycle().size() ? 0 : cycleIndex + 1;
+        this.setItem(this.getCycle().get(this.cycleIndex));
+
+        builder.setItem(this, this.getSlot());
     }
 }
