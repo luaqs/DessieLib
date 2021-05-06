@@ -88,13 +88,13 @@ public class InventoryAPI implements Listener {
         Player player = (Player) event.getPlayer();
 
         if (InventoryBuilder.getBuilder(player) != null && InventoryBuilder.getBuilder(player).getInventory() == currentInv) {
-            InventoryBuilder invBuilder = InventoryBuilder.inventories.get(player.getName());
+            InventoryBuilder invBuilder = InventoryBuilder.getBuilder(player);
 
-            if (invBuilder.preventClose) {
+            if (invBuilder.isPreventClose()) {
                 Bukkit.getScheduler().runTaskLater(plugin, () -> event.getPlayer().openInventory(invBuilder.getInventory()), 1);
             } else {
                 invBuilder.executeClose(player, invBuilder);
-                InventoryBuilder.inventories.remove(player.getName());
+                InventoryBuilder.getInventories().remove(player.getName());
             }
         }
     }

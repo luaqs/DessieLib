@@ -15,8 +15,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class InventoryBuilder {
-
-    public static HashMap<String, InventoryBuilder> inventories = new HashMap<>();
+    private static HashMap<Player, InventoryBuilder> inventories = new HashMap<>();
 
     private int size;
     private String name;
@@ -29,9 +28,9 @@ public class InventoryBuilder {
     private BiConsumer<Player, InventoryBuilder> open;
     private BiConsumer<Player, InventoryBuilder> pageChange;
 
-    boolean preventClose = false;
+    private boolean preventClose = false;
 
-    public HashMap<Integer, ItemBuilder> items = new HashMap<>();
+    private HashMap<Integer, ItemBuilder> items = new HashMap<>();
 
     /**
      * Creates an empty Inventory with a size and title.
@@ -110,6 +109,13 @@ public class InventoryBuilder {
     public HashMap<Integer, ItemBuilder> getItems() {return this.items;}
 
     /**
+     * @return If the player can close the Inventory
+     */
+    public boolean isPreventClose() {
+        return this.preventClose;
+    }
+
+    /**
      * @return The current page this Inventory is viewing
      */
     public int getCurrentPage() { return this.page + 1; }
@@ -137,7 +143,7 @@ public class InventoryBuilder {
         this.player = player;
         this.inventory = inv;
         player.openInventory(inv);
-        inventories.put(player.getName(), this);
+        inventories.put(player, this);
 
         executeOpen(player, this);
         return this;
@@ -714,7 +720,7 @@ public class InventoryBuilder {
      * @return The currently open InventoryBuilder of the player
      */
     public static InventoryBuilder getBuilder(Player player) {
-        return inventories.get(player.getName());
+        return inventories.get(player);
     }
 
     //Internal method.
@@ -806,6 +812,10 @@ public class InventoryBuilder {
                 }
             }
         }
+    }
+
+    public static Map<Player, InventoryBuilder> getInventories() {
+        return inventories;
     }
 
 }

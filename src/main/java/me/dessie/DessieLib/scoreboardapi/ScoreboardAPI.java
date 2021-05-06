@@ -6,10 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.*;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -23,6 +20,9 @@ public class ScoreboardAPI implements Listener {
     private Player player;
     private Objective sidebarObjective;
     private Objective tablistObjective;
+
+    private int titleTask;
+    Map<Integer, Integer> scoreTasks = new HashMap<>();
 
     /**
      * Each player should have their own unique ScoreboardAPI reference.
@@ -46,7 +46,6 @@ public class ScoreboardAPI implements Listener {
             this.sidebarObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
             this.tablistObjective = this.scoreboard.registerNewObjective("Tablist", "dummy", ChatColor.stripColor(Colors.color(name)));
-            this.tablistObjective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
             //Set the scoreboard for the player.
             this.player.setScoreboard(this.scoreboard);
@@ -82,7 +81,10 @@ public class ScoreboardAPI implements Listener {
         this.tablistObjective.unregister();
 
         this.tablistObjective = this.scoreboard.registerNewObjective("Tablist", criteria, this.sidebarObjective.getDisplayName());
-        this.tablistObjective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+
+        if(!criteria.equalsIgnoreCase("dummy")) {
+            this.tablistObjective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+        }
         return this;
     }
 
@@ -176,8 +178,10 @@ public class ScoreboardAPI implements Listener {
 
         this.scoreboard.getTeam(team).addEntry(this.player.getName());
 
-        //Update their own health.
-        this.tablistObjective.getScore(this.player.getName()).setScore((int) this.player.getHealth());
+        //Update their own health if necessary
+        if(this.tablistObjective.getCriteria().equalsIgnoreCase("health")) {
+            this.tablistObjective.getScore(this.player.getName()).setScore((int) this.player.getHealth());
+        }
 
         //Update everyone else's boards with the new entry.
         for(Player player : boards.keySet()) {
@@ -255,13 +259,14 @@ public class ScoreboardAPI implements Listener {
      * @return The ScoreboardAPI object
      */
     public ScoreboardAPI animateTitle(List<String> animation, int delay) {
-        int multiplier = 1;
+        titleTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            int multiplier = 1;
 
-        for(String s : animation) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> setTitle(s), delay * multiplier);
-            multiplier++;
-        }
-
+            for(String s : animation) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> setTitle(s), (long) delay * multiplier);
+                multiplier++;
+            }
+        }, delay, (long) animation.size() * delay).getTaskId();
         return this;
     }
 
@@ -274,11 +279,14 @@ public class ScoreboardAPI implements Listener {
      * @return The ScoreboardAPI object
      */
     public ScoreboardAPI animateScore(List<String> animation, int delay, int score) {
-        int multiplier = 1;
-        for(String s : animation) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> setLine(s, score), delay * multiplier);
-            multiplier++;
-        }
+        this.scoreTasks.put(score, Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            int multiplier = 1;
+            for(String s : animation) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> setLine(s, score), (long) delay * multiplier);
+                multiplier++;
+            }
+        }, delay, (long) animation.size() * delay).getTaskId());
+
         return this;
     }
 
@@ -301,6 +309,39 @@ public class ScoreboardAPI implements Listener {
     }
 
     /**
+     * Cancels the Title Animation
+     * @return The ScoreboardAPI
+     */
+    public ScoreboardAPI stopTitleAnimation() {
+        Bukkit.getScheduler().cancelTask(this.titleTask);
+        return this;
+    }
+
+    /**
+     *
+     * @param score The score animation to cancel
+     * @return The ScoreboardAPI
+     */
+    public ScoreboardAPI stopScoreAnimation(int score) {
+        if(!this.scoreTasks.containsKey(score)) return this;
+
+        Bukkit.getScheduler().cancelTask(this.scoreTasks.get(score));
+        return this;
+    }
+
+    /**
+     * Cancels all Score Animations.
+     * @return The ScoreboardAPI
+     */
+    public ScoreboardAPI stopAllScoreAnimation() {
+        for(int score : this.scoreTasks.keySet()) {
+            stopScoreAnimation(score);
+        }
+
+        return this;
+    }
+
+    /**
      * @return A random registered ScoreboardAPI object
      */
     public static ScoreboardAPI randomBoard() {
@@ -313,6 +354,15 @@ public class ScoreboardAPI implements Listener {
      */
     public static ScoreboardAPI getBoard(Player player) {
         return boards.get(player);
+    }
+
+    /**
+     * Note: Modifying this list will NOT modify the board list.
+     *
+     * @return All currently registered Scoreboard API objects
+     */
+    public static List<ScoreboardAPI> getBoards() {
+        return new ArrayList<>(boards.values());
     }
 
     /**

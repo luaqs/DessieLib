@@ -14,12 +14,18 @@ public class ScoreboardListener implements Listener {
 
     @EventHandler
     public static void onLeave(PlayerQuitEvent event) {
+        ScoreboardAPI board = ScoreboardAPI.getBoard(event.getPlayer());
+        if(board != null) {
+            board.stopTitleAnimation();
+            board.stopAllScoreAnimation();
+        }
+
         ScoreboardAPI.boards.remove(event.getPlayer());
 
         //Remove that player from all the entries.
         for(Player player : ScoreboardAPI.boards.keySet()) {
-            ScoreboardAPI board = ScoreboardAPI.getBoard(player);
-            for(Team team : board.getScoreboard().getTeams()) {
+            ScoreboardAPI scoreboard = ScoreboardAPI.getBoard(player);
+            for(Team team : scoreboard.getScoreboard().getTeams()) {
                 team.removeEntry(event.getPlayer().getName());
             }
         }
