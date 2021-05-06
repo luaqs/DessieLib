@@ -1,6 +1,6 @@
-package me.dessie.DessieLib.scoreboardapi;
+package me.dessie.dessielib.scoreboardapi;
 
-import me.dessie.DessieLib.Colors;
+import me.dessie.dessielib.Colors;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

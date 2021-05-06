@@ -1,17 +1,14 @@
-package me.dessie.DessieLib.inventoryapi;
+package me.dessie.dessielib.inventoryapi;
 
-import me.dessie.DessieLib.Colors;
+import me.dessie.dessielib.Colors;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class InventoryBuilder {
