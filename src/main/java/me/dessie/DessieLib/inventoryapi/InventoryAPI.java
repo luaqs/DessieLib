@@ -18,13 +18,19 @@ public class InventoryAPI implements Listener {
     private Plugin plugin;
     private static boolean registered = false;
 
-    public InventoryAPI(Plugin plugin) {
+    private InventoryAPI(Plugin plugin) {
         this.plugin = plugin;
+        this.plugin.getServer().getPluginManager().registerEvents(this, this.plugin);
         registered = true;
     }
 
-    static String color(String s) {
-        return ChatColor.translateAlternateColorCodes('&', s);
+    /**
+     * Main registration method, this must be called with your Plugin instance
+     * before creating or accessing any of the Inventory objects.
+     * @param plugin Your plugin instance
+     */
+    public static void register(Plugin plugin) {
+        new InventoryAPI(plugin);
     }
 
     @EventHandler
@@ -52,16 +58,12 @@ public class InventoryAPI implements Listener {
 
                 for(ItemBuilder item : invBuilder.getItems().values()) {
                     if(item.isSimilar(clicked) && item.getSlot() == clicked.getSlot()) {
-
-                        //Items are the same, do all ItemBuilder things now
-                        item.getBuilder().clickedItem = item;
-
-                        if(event.getClick() == ClickType.LEFT) {
-                            item.clickType = ClickType.LEFT;
-                        } else if(event.getClick() == ClickType.RIGHT) {
-                            item.clickType = ClickType.RIGHT;
-                        } else if(event.getClick() == ClickType.MIDDLE) {
-                            item.clickType = ClickType.MIDDLE;
+                        switch(event.getClick()) {
+                            case LEFT: item.clickType = ClickType.LEFT; break;
+                            case RIGHT: item.clickType = ClickType.RIGHT; break;
+                            case MIDDLE: item.clickType = ClickType.MIDDLE; break;
+                            case SHIFT_LEFT: item.clickType = ClickType.SHIFT_LEFT; break;
+                            case SHIFT_RIGHT: item.clickType = ClickType.SHIFT_RIGHT; break;
                         }
 
                         if(event.getCursor() != null) {
@@ -71,10 +73,8 @@ public class InventoryAPI implements Listener {
                         if(item.isCancel()) {
                             event.setCancelled(true);
                         }
-
+                        item.executeClick(player, item);
                         item.swap();
-
-                        item.executeClick();
                         return;
                     }
                 }
@@ -93,7 +93,7 @@ public class InventoryAPI implements Listener {
             if (invBuilder.preventClose) {
                 Bukkit.getScheduler().runTaskLater(plugin, () -> event.getPlayer().openInventory(invBuilder.getInventory()), 1);
             } else {
-                invBuilder.executeClose();
+                invBuilder.executeClose(player, invBuilder);
                 InventoryBuilder.inventories.remove(player.getName());
             }
         }

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'me.dessie'
-version '0.1.1'
+version '1.0.0'
 
 compileJava.options.encoding = 'UTF-8'
 
@@ -25,12 +25,15 @@ publishing {
             credentials {
                 username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
                 password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+
             }
         }
     }
 
     publications {
         gpr(MavenPublication) {
+            groupId 'me.dessie'
+            artifactId 'dessielib'
             from(components.java)
         }
     }

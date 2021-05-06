@@ -8,14 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Team;
 
 public class ScoreboardListener implements Listener {
-    static void register(JavaPlugin plugin) {
-        ScoreboardAPI.plugin = plugin;
-
-        //Register the events.
-        new ScoreboardListener().createListeners();
-    }
-
-    private void createListeners() {
+    void createListeners() {
         ScoreboardAPI.plugin.getServer().getPluginManager().registerEvents(this, ScoreboardAPI.plugin);
     }
 

@@ -19,11 +19,16 @@ public class ScoreboardAPI implements Listener {
     static Map<Player, ScoreboardAPI> boards = new HashMap<>();
     static JavaPlugin plugin;
 
-    Scoreboard scoreboard;
-    Player player;
-    Objective sidebarObjective;
-    Objective tablistObjective;
+    private Scoreboard scoreboard;
+    private Player player;
+    private Objective sidebarObjective;
+    private Objective tablistObjective;
 
+    /**
+     * Each player should have their own unique ScoreboardAPI reference.
+     * @param player The player to create this Scoreboard for
+     * @param name The display name for the objective
+     */
     public ScoreboardAPI(Player player, String name) {
         if(plugin == null) {
             throw new NullPointerException("You need to register your plugin before creating a new ScoreboardAPI!");
@@ -50,9 +55,29 @@ public class ScoreboardAPI implements Listener {
         }
     }
 
+    /**
+     * @return The {@link Scoreboard} related to this object
+     */
     public Scoreboard getScoreboard() { return this.scoreboard; }
+
+    /**
+     * @return The player this Scoreboard is assigned to
+     */
     public Player getPlayer() { return this.player; }
 
+    /**
+     * @param collidable If the player can collide with entities
+     */
+    public void setCollidable(boolean collidable) {
+        for(Team team : this.getScoreboard().getTeams()) {
+            team.setOption(Team.Option.COLLISION_RULE, collidable ? Team.OptionStatus.ALWAYS : Team.OptionStatus.NEVER);
+        }
+    }
+
+    /**
+     * @param criteria The scoreboard tablist criteria
+     * @return The ScoreboardAPI object
+     */
     public ScoreboardAPI setTablistCriteria(String criteria) {
         this.tablistObjective.unregister();
 
@@ -61,17 +86,35 @@ public class ScoreboardAPI implements Listener {
         return this;
     }
 
+    /**
+     * @param text The tablist header
+     * @return The ScoreboardAPI object
+     */
     public ScoreboardAPI setTabHeader(String text) {
         this.player.setPlayerListHeader(Colors.color(text));
         return this;
     }
 
+    /**
+     * @param text The tablist footer
+     * @return The ScoreboardAPI object
+     */
     public ScoreboardAPI setTabFooter(String text) {
         this.player.setPlayerListFooter(Colors.color(text));
         return this;
     }
 
-    //The higher the weight, the lower they will be on the tablist
+    /**
+     *
+     * Creates an organized team that will be sorted by weight on the tablist.
+     * The lower the weight, the higher the team will be.
+     *
+     * @param teamName The name of the team
+     * @param color The color of the tean
+     * @param prefix The prefix that appears before a player's name
+     * @param weight The weight of the team
+     * @return The ScoreboardAPI object
+     */
     public ScoreboardAPI addTablistTeam(String teamName, @Nullable org.bukkit.ChatColor color, @Nullable String prefix, int weight) {
         if(weight >= 100) {
             throw new IllegalArgumentException("Weight cannot be larger than 100!");
@@ -115,6 +158,10 @@ public class ScoreboardAPI implements Listener {
         return this;
     }
 
+    /**
+     * @param teamName The team to set the player on.
+     * @return The ScoreboardAPI object
+     */
     public ScoreboardAPI setPlayerTeam(String teamName) {
         String team;
         Optional<String> opTeam = this.scoreboard.getTeams().stream()
@@ -152,6 +199,13 @@ public class ScoreboardAPI implements Listener {
         return this;
     }
 
+    /**
+     * Sets a line of text on the Scoreboard
+     *
+     * @param text The text
+     * @param score The index of the line
+     * @return The ScoreboardAPI object
+     */
     public ScoreboardAPI setLine(String text, int score) {
         Team team;
         String scoreAsString = String.valueOf(score);
@@ -177,14 +231,29 @@ public class ScoreboardAPI implements Listener {
         return this;
     }
 
+    /**
+     * @param team The team to request
+     * @return If this scoreboard has the requested team registered
+     */
     public boolean hasTeam(String team) {
         return this.scoreboard.getTeams().stream().map(Team::getName).anyMatch(name -> name.equalsIgnoreCase(team));
     }
 
+    /**
+     * @param team The team to get
+     * @return The Team object from it's name
+     */
     public Team getTeam(String team) {
         return this.scoreboard.getTeam(team);
     }
 
+    /**
+     * Cycles through each frame to simulate animation.
+     *
+     * @param animation The animation frames
+     * @param delay Delay between each frame
+     * @return The ScoreboardAPI object
+     */
     public ScoreboardAPI animateTitle(List<String> animation, int delay) {
         int multiplier = 1;
 
@@ -196,6 +265,14 @@ public class ScoreboardAPI implements Listener {
         return this;
     }
 
+    /**
+     * Cycles through each frame to simulate animation.
+     *
+     * @param animation The animation frames
+     * @param delay Delay between each frame
+     * @param score The index to execute this animation on
+     * @return The ScoreboardAPI object
+     */
     public ScoreboardAPI animateScore(List<String> animation, int delay, int score) {
         int multiplier = 1;
         for(String s : animation) {
@@ -205,25 +282,48 @@ public class ScoreboardAPI implements Listener {
         return this;
     }
 
-    public ScoreboardAPI setTitle(String name) {
-        this.sidebarObjective.setDisplayName(Colors.color(name));
+    /**
+     * @param title The title of the Scoreboard
+     * @return The ScoreboardAPI object
+     */
+    public ScoreboardAPI setTitle(String title) {
+        this.sidebarObjective.setDisplayName(Colors.color(title));
         return this;
     }
 
+    /**
+     * Clears all lines on the Scoreboard
+     * @return The ScoreboardAPI object
+     */
     public ScoreboardAPI clear() {
         this.scoreboard.getEntries().forEach(this.scoreboard::resetScores);
         return this;
     }
 
+    /**
+     * @return A random registered ScoreboardAPI object
+     */
     public static ScoreboardAPI randomBoard() {
         return (ScoreboardAPI) boards.values().toArray()[new Random().nextInt(boards.size())];
     }
 
+    /**
+     * @param player The player
+     * @return That player's ScoreboardAPI object
+     */
     public static ScoreboardAPI getBoard(Player player) {
         return boards.get(player);
     }
 
-    public static void register(JavaPlugin yourPlugin) {
-        ScoreboardListener.register(yourPlugin);
+    /**
+     * Main registration method, this must be called with your Plugin instance
+     * before creating ScoreboardAPI objects.
+     * @param plugin Your plugin instance
+     */
+    public static void register(JavaPlugin plugin) {
+        ScoreboardAPI.plugin = plugin;
+
+        //Register the events.
+        new ScoreboardListener().createListeners();
     }
 }
