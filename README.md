@@ -46,7 +46,7 @@ DessieLib provides two main features that are cumbersome in CraftBukkit and Spig
 <summary>Basic InventoryAPI Usage</summary>
 
 ```java
-public class Main extends JavaPlugin implements CommandExecutor {
+public class me.dessie.dessielib.Main extends JavaPlugin implements CommandExecutor {
 
     @Override
     public void onEnable() {
@@ -106,7 +106,7 @@ public class Main extends JavaPlugin implements CommandExecutor {
 <summary>Basic ScoreboardAPI Usage</summary>
 
 ```java
-public class Main extends JavaPlugin implements Listener {
+public class me.dessie.dessielib.Main extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {

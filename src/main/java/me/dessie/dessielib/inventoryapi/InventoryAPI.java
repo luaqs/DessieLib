@@ -24,7 +24,7 @@ public class InventoryAPI implements Listener {
     }
 
     /**
-     * Main registration method, this must be called with your Plugin instance
+     * me.dessie.dessielib.Main registration method, this must be called with your Plugin instance
      * before creating or accessing any of the Inventory objects.
      * @param plugin Your plugin instance
      */

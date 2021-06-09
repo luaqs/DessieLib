@@ -1,6 +1,6 @@
 package me.dessie.dessielib.inventoryapi;
 
-import me.dessie.dessielib.Colors;
+import me.dessie.dessielib.utils.Colors;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

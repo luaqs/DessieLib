@@ -1,6 +1,6 @@
 package me.dessie.dessielib.inventoryapi;
 
-import me.dessie.dessielib.Colors;
+import me.dessie.dessielib.utils.Colors;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -13,7 +13,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 public class ItemBuilder {

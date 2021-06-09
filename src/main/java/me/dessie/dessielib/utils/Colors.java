@@ -1,4 +1,4 @@
-package me.dessie.dessielib;
+package me.dessie.dessielib.utils;
 
 import net.md_5.bungee.api.ChatColor;
 
