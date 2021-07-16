@@ -5,29 +5,13 @@ plugins {
 
 group 'me.dessie'
 version '1.1.0'
+java.sourceCompatibility = JavaVersion.VERSION_16
 
 compileJava.options.encoding = 'UTF-8'
-
-task copyJar(type: Copy) {
-    from "$buildDir/libs/"
-    into project.findProperty("outputDir")
-}
-
-build.finalizedBy copyJar
 
 repositories {
     mavenCentral()
     mavenLocal()
-
-
-    maven {
-        url 'https://maven.enginehub.org/repo/'
-    }
-
-
-    maven {
-        url "https://hub.spigotmc.org/nexus/content/repositories/snapshots"
-    }
 }
 
 publishing {
@@ -52,6 +36,82 @@ publishing {
     }
 }
 
+task copyJar(type: Copy) {
+    from "$buildDir/libs/" + rootProject.name + '.jar'
+    into project.findProperty("outputDir")
+}
+
+task copyTestJar(type: Copy) {
+    from "$buildDir/libs/" + rootProject.name + '-all.jar'
+    into project.findProperty("outputDir")
+}
+
+task obfuscate(type: Exec) {
+    description 'Generates a JAR where Mojangs Mappings are mapped to Obfuscated ones. Cannot run properly on a Spigot server.'
+    group = 'obfuscate'
+    workingDir "${buildDir}"
+    ext.toolingDir = System.getProperty("user.dir")
+    ext.homeDir = project.gradle.gradleUserHomeDir.parent
+    commandLine 'java', '-cp', ext.toolingDir + '/tooling/specialsource/SpecialSource.jar;' + ext.homeDir + '/.m2/repository/org/spigotmc/spigot/' + minecraftVersion + '/spigot-' + minecraftVersion + '-remapped-mojang.jar', 'net.md_5.specialsource.SpecialSource',
+            '--live', '-i', 'libs/' + rootProject.name + "-" + rootProject.version + '.jar',
+            '-o', 'libs/' + rootProject.name + "-obf.jar", '-m',
+            ext.homeDir + '/.m2/repository/org/spigotmc/minecraft-server/' + minecraftVersion + '/minecraft-server-' + minecraftVersion + '-maps-mojang.txt',
+            '--reverse'
+}
+
+task obfuscateTest(type: Exec) {
+    description 'Generates a JAR where Mojangs Mappings are mapped to Obfuscated ones. Cannot run properly on a Spigot server.'
+    group = 'obfuscate'
+    workingDir "${buildDir}"
+    ext.toolingDir = System.getProperty("user.dir")
+    ext.homeDir = project.gradle.gradleUserHomeDir.parent
+    commandLine 'java', '-cp', ext.toolingDir + '/tooling/specialsource/SpecialSource.jar;' + ext.homeDir + '/.m2/repository/org/spigotmc/spigot/' + minecraftVersion + '/spigot-' + minecraftVersion + '-remapped-mojang.jar', 'net.md_5.specialsource.SpecialSource',
+            '--live', '-i', 'libs/' + rootProject.name + "-" + rootProject.version + '-test.jar',
+            '-o', 'libs/' + rootProject.name + "-obf-test.jar", '-m',
+            ext.homeDir + '/.m2/repository/org/spigotmc/minecraft-server/' + minecraftVersion + '/minecraft-server-' + minecraftVersion + '-maps-mojang.txt',
+            '--reverse'
+}
+
+task deobfuscate(type: Exec) {
+    description 'Generates a JAR where Obfuscated Mappings are mapped to Spigot ones. Should be used on a Spigot server.'
+    group = 'obfuscate'
+    workingDir "${buildDir}"
+    ext.toolingDir = System.getProperty("user.dir")
+    ext.homeDir = project.gradle.gradleUserHomeDir.parent
+    commandLine 'java', '-cp', ext.toolingDir + '/tooling/specialsource/SpecialSource.jar;' + ext.homeDir + '/.m2/repository/org/spigotmc/spigot/' + minecraftVersion + '/spigot-' + minecraftVersion + '-remapped-obf.jar', 'net.md_5.specialsource.SpecialSource',
+            '--live', '-i', 'libs/' + rootProject.name + '-obf.jar',
+            '-o', 'libs/' + rootProject.name + '.jar', '-m',
+            ext.homeDir + '/.m2/repository/org/spigotmc/minecraft-server/' + minecraftVersion + '/minecraft-server-' + minecraftVersion + '-maps-spigot.csrg'
+}
+
+task deobfuscateTest(type: Exec) {
+    description 'Generates a JAR where Obfuscated Mappings are mapped to Spigot ones. Should be used on a Spigot server.'
+    group = 'obfuscate'
+    workingDir "${buildDir}"
+    ext.toolingDir = System.getProperty("user.dir")
+    ext.homeDir = project.gradle.gradleUserHomeDir.parent
+    commandLine 'java', '-cp', ext.toolingDir + '/tooling/specialsource/SpecialSource.jar;' + ext.homeDir + '/.m2/repository/org/spigotmc/spigot/' + minecraftVersion + '/spigot-' + minecraftVersion + '-remapped-obf.jar', 'net.md_5.specialsource.SpecialSource',
+            '--live', '-i', 'libs/' + rootProject.name + '-obf-test.jar',
+            '-o', 'libs/' + rootProject.name + '-all.jar', '-m',
+            ext.homeDir + '/.m2/repository/org/spigotmc/minecraft-server/' + minecraftVersion + '/minecraft-server-' + minecraftVersion + '-maps-spigot.csrg'
+}
+
+task buildTest(type: Jar) {
+    classifier "test"
+    group 'build'
+    from sourceSets.main.output
+    from sourceSets.test.output
+}
+
+build.finalizedBy obfuscate
+build.finalizedBy deobfuscate
+build.finalizedBy copyJar
+
+buildTest.finalizedBy obfuscateTest
+buildTest.finalizedBy deobfuscateTest
+buildTest.finalizedBy copyTestJar
+
 dependencies {
-    compileOnly "org.spigotmc:spigot:1.16.5-R0.1-SNAPSHOT"
+    compileOnly 'org.spigotmc:spigot:' + minecraftVersion + ':remapped-mojang'
+    testCompileOnly "org.spigotmc:spigot:" + minecraftVersion + ":remapped-mojang"
 }

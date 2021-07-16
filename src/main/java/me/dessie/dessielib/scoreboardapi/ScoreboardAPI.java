@@ -28,7 +28,7 @@ public class ScoreboardAPI implements Listener {
     Map<Integer, Integer> scoreTasks = new HashMap<>();
 
     /**
-     * Each player should have their own unique ScoreboardAPI reference.
+     * Each player should have their own unique ScoreboardAPI instance.
      * @param player The player to create this Scoreboard for
      * @param name The display name for the objective
      */

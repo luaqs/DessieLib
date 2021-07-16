@@ -1,13 +1,12 @@
 package me.dessie.dessielib.enchantmentapi.utils;
 
 import me.dessie.dessielib.enchantmentapi.CEnchantment;
-import me.dessie.dessielib.enchantmentapi.CEnchantmentLoader;
 import me.dessie.dessielib.events.slot.SlotEventHelper;
-import net.minecraft.server.v1_16_R3.EntityExperienceOrb;
-import net.minecraft.server.v1_16_R3.World;
-import org.bukkit.Bukkit;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.ExperienceOrb;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Random;
@@ -68,13 +67,13 @@ public class GrindstoneGenerator {
     }
 
     public static void dropExp(int amount, Location location) {
-        World world = (((CraftWorld) location.getWorld()).getHandle());
+        ServerLevel world = (((CraftWorld) location.getWorld()).getHandle());
         while(amount > 0) {
-            int k = EntityExperienceOrb.getOrbValue(amount);
+            int k = ExperienceOrb.getExperienceValue(amount);
             amount -= k;
 
             //Spawn the orb
-            world.addEntity(new EntityExperienceOrb(world, location.getX(), location.getY(), location.getZ(), k));
+            world.addEntity(new ExperienceOrb(world, location.getX(), location.getY(), location.getZ(), k), CreatureSpawnEvent.SpawnReason.CUSTOM);
         }
     }
 

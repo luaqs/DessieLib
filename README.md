@@ -2,7 +2,7 @@
 A generic Spigot API for making life easier
 
 ## :books: Requirements
-- Java 8
+- Java 16
 
 ## :newspaper: API
 

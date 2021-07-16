@@ -9,27 +9,29 @@ import me.dessie.dessielib.enchantmentapi.utils.VillagerGenerator;
 import me.dessie.dessielib.events.slot.SlotEventHelper;
 import me.dessie.dessielib.events.slot.SlotUpdateEvent;
 import me.dessie.dessielib.events.slot.UpdateType;
-import net.minecraft.server.v1_16_R3.ContainerEnchantTable;
-import net.minecraft.server.v1_16_R3.IRegistry;
+import me.dessie.dessielib.utils.Colors;
+import net.minecraft.core.IdMap;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.world.inventory.EnchantmentMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftInventoryView;
-import org.bukkit.craftbukkit.v1_16_R3.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftInventoryView;
+import org.bukkit.craftbukkit.v1_17_R1.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Creeper;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.enchantment.EnchantItemEvent;
-import org.bukkit.event.entity.VillagerAcquireTradeEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 public class PropertyListener implements Listener {
 
@@ -160,18 +162,21 @@ public class PropertyListener implements Listener {
         }
     }
 
+
     @EventHandler
     public void onEnchant(EnchantItemEvent event) {
-
-
         //Get which enchantment they clicked, we don't want to remove the enchantment that they got guaranteed.
         //This is just done by accessing the EnchantmentTable's offers through NMS and grabbing the enchantment ID.
-        ContainerEnchantTable tableContainer = ((ContainerEnchantTable) ((CraftInventoryView) event.getView()).getHandle());
+
+        EnchantmentMenu tableContainer = (EnchantmentMenu) ((CraftInventoryView) event.getView()).getHandle();
+
         Enchantment clicked = null;
         for(int i = 0; i < 3; i++) {
             if(tableContainer.costs[i] == event.getExpLevelCost()) {
-                int id = tableContainer.enchantments[i];
-                clicked = id >= 0 ? Enchantment.getByKey(CraftNamespacedKey.fromMinecraft(IRegistry.ENCHANTMENT.getKey(IRegistry.ENCHANTMENT.fromId(id)))) : null;
+                int id = tableContainer.enchantClue[i];
+
+                //Original line, remove everything except the following:
+                clicked = id >= 0 ? Enchantment.getByKey(CraftNamespacedKey.fromMinecraft(Registry.ENCHANTMENT.getKey(Registry.ENCHANTMENT.byId(id)))) : null;
             }
         }
         if(clicked == null) return;
@@ -181,13 +186,14 @@ public class PropertyListener implements Listener {
         event.getEnchantsToAdd().keySet().removeIf(ench -> ench != finalClicked);
 
         //Get modified power.
-        int modifiedPower = EnchantmentGenerator.getModifiedPower(event.getItem().getType(), event.getExpLevelCost());
+        int modifiedPower = EnchantmentGenerator.getModifiedPower(event.getItem(), event.getExpLevelCost());
 
         //Get all possible enchantments for this item
         Map<Enchantment, Integer> possibleEnchantments = EnchantmentGenerator.getPossibleEnchantments(event.getItem(), clicked, modifiedPower);
 
         //Choose enchantments and then apply them
         List<Enchantment> chosen = EnchantmentGenerator.chooseEnchantments(new ArrayList<>(possibleEnchantments.keySet()), clicked, modifiedPower);
+
         for(Enchantment enchantment : chosen) {
             if(enchantment instanceof CEnchantment) {
                 ((CEnchantment) enchantment).enchant(event.getItem(), possibleEnchantments.get(enchantment));
