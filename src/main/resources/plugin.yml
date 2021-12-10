@@ -1,0 +1,6 @@
+author: Dessie
+name: DessieLib
+main: me.dessie.dessielib.DessieLib
+version: '${ver}'
+
+api-version: 1.18

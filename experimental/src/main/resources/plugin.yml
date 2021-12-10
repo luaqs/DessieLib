@@ -1,0 +1,13 @@
+author: Dessie
+name: DessieLib
+main: me.dessie.dessielib.me.dessie.dessielib.Main
+version: '${ver}'
+
+api-version: 1.18
+
+commands:
+  cenchant:
+    description: Adds an enchantment
+
+  sendemotes:
+    description: Sends emotes

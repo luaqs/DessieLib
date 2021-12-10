@@ -2,7 +2,7 @@
 A generic Spigot API for making life easier
 
 ## :books: Requirements
-- Java 16
+- Java 17
 
 ## :newspaper: API
 
@@ -15,7 +15,7 @@ maven {
 }
 
 dependencies {
-  compileOnly 'me.dessie:dessielib:1.0.2'
+  compileOnly 'me.dessie:dessielib:1.1.2'
 }
 ```
 
@@ -25,7 +25,7 @@ dependencies {
   <dependency>
     <groupId>me.dessie</groupId>
     <artifactId>dessielib</artifactId>
-    <version>1.0.2</version>
+    <version>1.1.2</version>
   </dependency>
 </dependencies>
 ```
@@ -38,15 +38,18 @@ The complete JavaDocs can be found [here](https://dessie0.github.io/DessieLib/) 
 
 DessieLib provides two main features that are cumbersome in CraftBukkit and Spigot, but easily contained within DessieLib.
 
-- [`InventoryAPI`]() is a powerful way to manage inventories without having to mess with events
-- [`ScoreboardAPI`]() used to create organized tablists & scoreboards without the hassle of dealing with teams.
-
+- `InventoryAPI` is a powerful way to manage inventories without having to mess with events
+- `ScoreboardAPI` used to create organized tablists & scoreboards without the hassle of dealing with teams.
+- `ParticleAPI` can easily create complex particle patterns or shapes, and animate them dynamically.
+- `EnchantmentAPI` can manage fully customizable Enchantments
+- `ResourcepackAPI` Allows you to generate an entire resource pack by just dropping in files.
+- `Packeteer` Allows you to listen for incoming and outgoing packets, and fire events for these packets.
 
 <details>
 <summary>Basic InventoryAPI Usage</summary>
 
 ```java
-public class me.dessie.dessielib.Main extends JavaPlugin implements CommandExecutor {
+public class me.dessie.dessielib.me.dessie.dessielib.Main extends JavaPlugin implements CommandExecutor {
 
     @Override
     public void onEnable() {
@@ -56,7 +59,7 @@ public class me.dessie.dessielib.Main extends JavaPlugin implements CommandExecu
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("testinventory")) {
-            //Creates an ItemBuilder as 1 Diamond, named {AQUA} Diamond. 
+            //Creates an ItemBuilder as 1 Diamond, named "Diamond" with AQUA color. 
             ItemBuilder item = new ItemBuilder(ItemBuilder.buildItem(Material.DIAMOND, 1, "&bDiamond"));
             //Does not allow the item to be picked up
             item.cancel();
@@ -106,7 +109,7 @@ public class me.dessie.dessielib.Main extends JavaPlugin implements CommandExecu
 <summary>Basic ScoreboardAPI Usage</summary>
 
 ```java
-public class me.dessie.dessielib.Main extends JavaPlugin implements Listener {
+public class me.dessie.dessielib.me.dessie.dessielib.Main extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
@@ -196,6 +199,8 @@ public class me.dessie.dessielib.Main extends JavaPlugin implements Listener {
 </details>
 
 DessieLib also features small API elements such as
-- [`ConfigManager`](), which is used for basic external configuration loading
-- [`Base64`](), which can read and write Base64 strings into `ItemStack`s or `List<ItemStack>`
+- `ConfigManager`, which is used for basic external configuration loading
+- `Base64`, which can read and write Base64 strings into `ItemStack`s or `List<ItemStack>`
+- `LoopedRunnable` which will run a BukkitRunnable a set number of times before automatically stopping.
+- `SoundUtil` which can grab the Break/Place sound of specific blocks.
  
