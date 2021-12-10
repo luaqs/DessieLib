@@ -1,11 +1,2 @@
 group 'me.dessie'
 version '1.1.2'
-
-dependencies {
-    implementation project(":packeteer")
-    implementation project(":inventory-api")
-    implementation project(":enchantment-api")
-    implementation project(":scoreboard-api")
-    implementation project(":resourcepack-api")
-    implementation project(":particle-api")
-}

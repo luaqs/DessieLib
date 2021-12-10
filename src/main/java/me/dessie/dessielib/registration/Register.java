@@ -1,4 +1,4 @@
-package me.dessie.dessielib.core.registration;
+package me.dessie.dessielib.registration;
 
 import me.dessie.dessielib.core.events.slot.SlotEventHelper;
 import me.dessie.dessielib.enchantmentapi.CEnchantmentLoader;

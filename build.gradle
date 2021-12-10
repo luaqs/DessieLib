@@ -17,6 +17,7 @@ processResources {
 //Apply the java plugin across subprojects.
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'maven-publish'
 }
 
 allprojects {
@@ -54,6 +55,27 @@ allprojects {
                 ext.homeDir + '/.m2/repository/org/spigotmc/minecraft-server/' + minecraftVersion + '/minecraft-server-' + minecraftVersion + '-maps-spigot.csrg'
     }
 
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url "https://maven.pkg.github.com/dessie0/dessielib"
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+
+        publications {
+            gpr(MavenPublication) {
+                groupId "me.dessie.dessielib"
+                artifactId project.name
+                from components.java
+            }
+        }
+    }
+
     build.finalizedBy obfuscate
     build.finalizedBy deobfuscate
 
@@ -65,33 +87,13 @@ allprojects {
     dependencies {
         compileOnly 'org.spigotmc:spigot:' + minecraftVersion + ':remapped-mojang'
     }
+
 }
 
 //Add Core module as a dependency for all other modules, except itself.
 configure(subprojects.findAll {it.name != 'core'}) {
     dependencies {
         implementation project(":core")
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url "https://maven.pkg.github.com/dessie0/dessielib"
-            credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-
-    publications {
-        gpr(MavenPublication) {
-            groupId 'me.dessie'
-            artifactId 'dessielib'
-            from(components.java)
-        }
     }
 }
 

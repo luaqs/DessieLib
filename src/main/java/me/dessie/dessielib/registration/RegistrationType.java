@@ -1,4 +1,4 @@
-package me.dessie.dessielib.core.registration;
+package me.dessie.dessielib.registration;
 
 public enum RegistrationType {
 
