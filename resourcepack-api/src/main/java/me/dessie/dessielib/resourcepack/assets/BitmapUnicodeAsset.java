@@ -2,10 +2,10 @@ package me.dessie.dessielib.resourcepack.assets;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import me.dessie.dessielib.resourcepack.ResourcePackBuilder;
 import me.dessie.dessielib.core.utils.Colors;
 import me.dessie.dessielib.core.utils.json.JsonArrayBuilder;
 import me.dessie.dessielib.core.utils.json.JsonObjectBuilder;
+import me.dessie.dessielib.resourcepack.ResourcePackBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
@@ -61,7 +61,7 @@ public class BitmapUnicodeAsset extends Asset {
 
     //The Unicode symbol that this asset represents.
     //Will be 0 if this asset hasn't been generated.
-    private int unicode;
+    private int unicode = 0;
 
     /**
      * @param name The name of the asset
@@ -178,7 +178,7 @@ public class BitmapUnicodeAsset extends Asset {
         return this;
     }
 
-    private void setUnicode(int unicode) {
+    public void setUnicode(int unicode) {
         this.unicode = unicode;
     }
 
@@ -262,7 +262,7 @@ public class BitmapUnicodeAsset extends Asset {
         JsonObjectBuilder object = new JsonObjectBuilder();
 
         //The start of our HEX unicode symbols, which is E000.
-        int decimalHex = 57344;
+        int decimalHex = 0xE000;
 
         //Filter the assets by their texture reference.
         Map<String, List<BitmapUnicodeAsset>> filtered = new HashMap<>();
@@ -281,7 +281,9 @@ public class BitmapUnicodeAsset extends Asset {
             //Row, Unicode String for the chars property.
             Map<Integer, StringBuilder> property = new LinkedHashMap<>();
             for(BitmapUnicodeAsset asset : filtered.get(texture)) {
-                String unicode = "\\u" + Integer.toHexString(decimalHex).toUpperCase(Locale.ROOT);
+                // if the unicode value has been manually set
+                // then use that value instead
+                String unicode = "\\u" + Integer.toHexString(this.unicode != 0 ? this.unicode : decimalHex).toUpperCase(Locale.ROOT);
 
                 if(asset.getAtlasData() == null) {
                     property.put(0, new StringBuilder(unicode));
@@ -291,8 +293,9 @@ public class BitmapUnicodeAsset extends Asset {
                 }
 
                 //Set the Unicode
-                asset.setUnicode(decimalHex);
-                decimalHex++;
+                if (this.unicode == 0) {
+                    asset.setUnicode(decimalHex++);
+                }
             }
 
             //Make sure all rows have the same number of unicode characters, by appending \u0000
