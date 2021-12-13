@@ -18,12 +18,17 @@ public class MetaAsset extends Asset {
     private String description;
     private File icon;
 
+    private int packFormat;
+
     public MetaAsset(String name, String description, File icon) {
         super(name);
 
         this.mcmetaFile = new File(this.getResourcePackFolder(), "pack.mcmeta");
         this.description = description;
         this.icon = icon;
+
+        // default is 7
+        this.packFormat = 7;
     }
 
     public File getMcmetaFile() {
@@ -45,10 +50,18 @@ public class MetaAsset extends Asset {
     public void generate(ResourcePackBuilder builder) {
         //Generate the JSON
         JsonObject object = new JsonObjectBuilder().add("pack", new JsonObjectBuilder()
-                .add("pack_format", 7)
+                .add("pack_format", packFormat)
                 .add("description", this.getDescription()).getObject()).getObject();
 
         write(object, this.getMcmetaFile());
+    }
+
+    public void setPackFormat(int packFormat) {
+        this.packFormat = packFormat;
+    }
+
+    public int getPackFormat() {
+        return packFormat;
     }
 
     public File getIcon() {
