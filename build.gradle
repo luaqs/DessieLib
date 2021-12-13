@@ -101,12 +101,25 @@ shadowJar {
     archiveName('DessieLib-' + rootProject.version + '.jar')
 }
 
+task shadowLib {
+    group = 'shadow'
+
+    // exclude the plugin.yml and change the name
+    shadowJar {
+        exclude 'plugin.yml'
+        archiveName("DessieLib-${rootProject.version}-lib.jar")
+    }
+
+    // run shadow jar
+    dependsOn 'shadowJar'
+}
+
 task copyJar(type: Copy) {
     from "$buildDir/libs/DessieLib-" + rootProject.version + '.jar'
     into project.findProperty("outputDir")
 }
 
-shadowJar.finalizedBy copyJar
+//shadowJar.finalizedBy copyJar
 
 dependencies {
     implementation project(":core")
