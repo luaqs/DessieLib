@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
@@ -102,9 +103,25 @@ public class BitmapUnicodeAsset extends Asset {
 
         if(this.getBitmappedImage() != null) {
             this.setHeight(height);
-            Image scaled = this.getBitmappedImage().getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
-            this.bitmappedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            this.getBitmappedImage().getGraphics().drawImage(scaled, 0, 0, null);
+
+            // calculate the factors by which to scale an image
+            float fWidth  = (float) width  / (float) this.bitmappedImage.getWidth();
+            float fHeight = (float) height / (float) this.bitmappedImage.getHeight();
+
+            BufferedImage downscaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            AffineTransform transform = AffineTransform.getScaleInstance(fWidth, fHeight);
+
+            // draw the bitmapped image provided onto the downscaled using the transformation
+            Graphics2D graphics = downscaled.createGraphics();
+
+            // allows for smoother downscaling
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+            graphics.drawRenderedImage(this.bitmappedImage, transform);
+
+            // the bitmapped image is now downscaled
+            this.bitmappedImage = downscaled;
         }
     }
 
