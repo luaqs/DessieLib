@@ -73,6 +73,21 @@ public class BitmapUnicodeAsset extends Asset {
     }
 
     /**
+     * Method that doesn't downscale the image but only sets the height
+     * which forces the Minecraft client to do the downscaling, which means
+     * more detail is kept.
+     *
+     * @param name The name of the asset
+     * @param bitmappedImage A .png file to render as this bitmap
+     * @param height The height of the character
+     */
+    public BitmapUnicodeAsset(String name, File bitmappedImage, int height) {
+        this(name, bitmappedImage, null, height + 1, false);
+
+        this.height = height;
+    }
+
+    /**
      * @param name The name of the asset
      * @param bitmappedImage A .png file to render as this bitmap
      * @param shouldUseInAtlas If the bitmap should be used in an atlas or referenced separately
