@@ -221,12 +221,7 @@ public class ResourcePackBuilder {
                 }
             }
 
-            ResourcePack pack = new ResourcePack(zipped, new NamespacedKey(ResourcePack.getPlugin(), this.getNamespace()), this);
-            if(this.getResourcePackServer() != null) {
-                this.getResourcePackServer().setResourcePack(pack);
-            }
-
-            return pack;
+            return new ResourcePack(zipped, new NamespacedKey(ResourcePack.getPlugin(), this.getNamespace()), this);
         } catch (IOException e) {
             e.printStackTrace();
         }
