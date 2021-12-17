@@ -124,6 +124,10 @@ public class ResourcePackServer implements HttpHandler, Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+        if (!this.isRequired()) {
+            return;
+        }
+
         Bukkit.getScheduler().runTask(ResourcePack.getPlugin(), () -> {
             //When the player joins, send them the resource pack.
             event.getPlayer().setResourcePack(this.getPackUrl(), this.getResourcePack().getBuilder().getHashBytes());

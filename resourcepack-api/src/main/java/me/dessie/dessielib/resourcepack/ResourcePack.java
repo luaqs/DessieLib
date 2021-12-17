@@ -5,7 +5,11 @@ import me.dessie.dessielib.packeteer.Packeteer;
 import me.dessie.dessielib.resourcepack.assets.BlockStateAsset;
 import me.dessie.dessielib.resourcepack.assets.SoundAsset;
 import me.dessie.dessielib.resourcepack.listeners.BlockListener;
+import me.dessie.dessielib.resourcepack.webhost.ResourcePackServer;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.protocol.game.ClientboundResourcePackPacket;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.v1_18_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -43,6 +47,23 @@ public class ResourcePack implements PacketListener {
             getPlugin().getServer().getPluginManager().registerEvents(listener, getPlugin());
             packeteer.addListener(listener);
         }
+    }
+
+    public void promptPlayer(Player player) {
+        promptPlayer(player, null);
+    }
+
+    public void promptPlayer(Player player, String message) {
+        ResourcePackServer server = builder.getResourcePackServer();
+        if (server == null) {
+            return; // do not show if the server is unset
+        }
+
+        TextComponent component = new TextComponent(message != null ? message : "");
+
+        // create a packet using the URL of the pack, the hash of the pack, whether it's required, and the prompt
+        ClientboundResourcePackPacket packPacket = new ClientboundResourcePackPacket(server.getPackUrl(), builder.getHash(), server.isRequired(), component);
+        ((CraftPlayer) player).getHandle().connection.send(packPacket);
     }
 
     /**
