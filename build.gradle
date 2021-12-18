@@ -20,6 +20,48 @@ subprojects {
     apply plugin: 'maven-publish'
 }
 
+def realName(String fileName) {
+    return fileName.substring(0, fileName.lastIndexOf("."))
+}
+
+task spigotReady {
+    group 'obfuscate'
+    description 'Converts all jars present in the ./build/libs/ directory into Spigot ready jars placed in ./build/reobfuscated/'
+
+    String homeDir    = project.gradle.gradleUserHomeDir.parent.replace("\\", "/")
+    String localSpigot = "${homeDir}/.m2/repository/org/spigotmc"
+
+    fileTree(dir: "${project.projectDir}/build/libs", include: [ '*.jar' ]).forEach { file ->
+        String output = "tmp/${file.getName()}"
+
+        println "Remapping ${file.getName()}"
+
+        exec {
+            workingDir 'build/'
+
+            // convert the jar to the Mojang version and output it into the temporary directory
+            commandLine 'java',
+                    '-jar', "${project.projectDir}/${toolingDir}/SpecialSource.jar", "net.md_5.specialsource.SpecialSource",
+                    '-i', "\"${file.getAbsolutePath()}\"",
+                    '-o', output,
+                    '-m', "\"${localSpigot}/minecraft-server/${minecraftVersion}/minecraft-server-${minecraftVersion}-maps-mojang.txt\"",
+                    '-l', '-r'
+        }
+
+        exec {
+            workingDir 'build/'
+
+            // remap the generated temporary file to be Spigot mapped
+            commandLine 'java',
+                    '-jar', "${project.projectDir}/${toolingDir}/SpecialSource.jar", "net.md_5.specialsource.SpecialSource",
+                    '-i', output,
+                    '-o', "reobf/${realName(file.getName())}-reobf.jar",
+                    '-m', "\"${localSpigot}/minecraft-server/${minecraftVersion}/minecraft-server-${minecraftVersion}-maps-spigot.csrg\"",
+                    '-l'
+        }
+    }
+}
+
 allprojects {
     version = project.version
 
@@ -27,33 +69,6 @@ allprojects {
     java.targetCompatibility = JavaVersion.VERSION_17
 
     compileJava.options.encoding = 'UTF-8'
-
-    task obfuscate(type: Exec) {
-        description 'Generates a JAR where Mojangs Mappings are mapped to Obfuscated ones. Cannot run properly on a Spigot server.'
-        group = 'obfuscate'
-        workingDir "${buildDir}"
-        toolingDir = rootProject.findProperty("toolingDir")
-        ext.homeDir = project.gradle.gradleUserHomeDir.parent
-
-        commandLine 'java', '-cp', toolingDir + '/SpecialSource.jar;' + ext.homeDir + '/.m2/repository/org/spigotmc/spigot/' + minecraftVersion + '/spigot-' + minecraftVersion + '-remapped-mojang.jar', 'net.md_5.specialsource.SpecialSource',
-                '--live', '-i', 'libs/' + project.name + "-" + project.version + '.jar',
-                '-o', 'libs/' + project.name + "-obf.jar", '-m',
-                ext.homeDir + '/.m2/repository/org/spigotmc/minecraft-server/' + minecraftVersion + '/minecraft-server-' + minecraftVersion + '-maps-mojang.txt',
-                '--reverse'
-    }
-
-    task deobfuscate(type: Exec) {
-        description 'Generates a JAR where Obfuscated Mappings are mapped to Spigot ones. Should be used on a Spigot server.'
-        group = 'obfuscate'
-        workingDir "${buildDir}"
-        toolingDir = rootProject.findProperty("toolingDir")
-        ext.homeDir = project.gradle.gradleUserHomeDir.parent
-
-        commandLine 'java', '-cp', toolingDir + '/SpecialSource.jar;' + ext.homeDir + '/.m2/repository/org/spigotmc/spigot/' + minecraftVersion + '/spigot-' + minecraftVersion + '-remapped-obf.jar', 'net.md_5.specialsource.SpecialSource',
-                '--live', '-i', 'libs/' + project.name + '-obf.jar',
-                '-o', 'libs/' + project.name + '.jar', '-m',
-                ext.homeDir + '/.m2/repository/org/spigotmc/minecraft-server/' + minecraftVersion + '/minecraft-server-' + minecraftVersion + '-maps-spigot.csrg'
-    }
 
     publishing {
         repositories {
