@@ -315,7 +315,7 @@ public class BitmapUnicodeAsset extends Asset {
             for(BitmapUnicodeAsset asset : filtered.get(texture)) {
                 // if the unicode value has been manually set
                 // then use that value instead
-                String unicode = "\\u" + Integer.toHexString(this.unicode != 0 ? this.unicode : decimalHex).toUpperCase(Locale.ROOT);
+                String unicode = "\\u" + Integer.toHexString(asset.unicode != 0 ? asset.unicode : decimalHex).toUpperCase(Locale.ROOT);
 
                 if(asset.getAtlasData() == null) {
                     property.put(0, new StringBuilder(unicode));
@@ -325,7 +325,7 @@ public class BitmapUnicodeAsset extends Asset {
                 }
 
                 //Set the Unicode
-                if (this.unicode == 0) {
+                if (asset.unicode == 0) {
                     asset.setUnicode(decimalHex++);
                 }
             }

@@ -36,28 +36,30 @@ task spigotReady {
 
         println "Remapping ${file.getName()}"
 
-        exec {
-            workingDir 'build/'
+        doLast {
+            exec {
+                workingDir 'build/'
 
-            // convert the jar to the Mojang version and output it into the temporary directory
-            commandLine 'java',
-                    '-jar', "${project.projectDir}/${toolingDir}/SpecialSource.jar", "net.md_5.specialsource.SpecialSource",
-                    '-i', "\"${file.getAbsolutePath()}\"",
-                    '-o', output,
-                    '-m', "\"${localSpigot}/minecraft-server/${minecraftVersion}/minecraft-server-${minecraftVersion}-maps-mojang.txt\"",
-                    '-l', '-r'
-        }
+                // convert the jar to the Mojang version and output it into the temporary directory
+                commandLine 'java',
+                        '-jar', "${project.projectDir}/${toolingDir}/SpecialSource.jar", "net.md_5.specialsource.SpecialSource",
+                        '-i', "\"${file.getAbsolutePath()}\"",
+                        '-o', output,
+                        '-m', "\"${localSpigot}/minecraft-server/${minecraftVersion}/minecraft-server-${minecraftVersion}-maps-mojang.txt\"",
+                        '-l', '-r'
+            }
 
-        exec {
-            workingDir 'build/'
+            exec {
+                workingDir 'build/'
 
-            // remap the generated temporary file to be Spigot mapped
-            commandLine 'java',
-                    '-jar', "${project.projectDir}/${toolingDir}/SpecialSource.jar", "net.md_5.specialsource.SpecialSource",
-                    '-i', output,
-                    '-o', "reobf/${realName(file.getName())}-reobf.jar",
-                    '-m', "\"${localSpigot}/minecraft-server/${minecraftVersion}/minecraft-server-${minecraftVersion}-maps-spigot.csrg\"",
-                    '-l'
+                // remap the generated temporary file to be Spigot mapped
+                commandLine 'java',
+                        '-jar', "${project.projectDir}/${toolingDir}/SpecialSource.jar", "net.md_5.specialsource.SpecialSource",
+                        '-i', output,
+                        '-o', "reobf/${realName(file.getName())}-reobf.jar",
+                        '-m', "\"${localSpigot}/minecraft-server/${minecraftVersion}/minecraft-server-${minecraftVersion}-maps-spigot.csrg\"",
+                        '-l'
+            }
         }
     }
 }
@@ -91,9 +93,6 @@ allprojects {
         }
     }
 
-    build.finalizedBy obfuscate
-    build.finalizedBy deobfuscate
-
     repositories {
         mavenLocal()
         mavenCentral()
@@ -113,20 +112,17 @@ configure(subprojects.findAll {it.name != 'core'}) {
 }
 
 shadowJar {
-    archiveName('DessieLib-' + rootProject.version + '.jar')
+    archiveName("DessieLib-${rootProject.version}.jar")
 }
 
-task shadowLib {
-    group = 'shadow'
+task shadowLib(type: Jar, dependsOn: shadowJar) {
+    group 'shadow'
 
     // exclude the plugin.yml and change the name
-    shadowJar {
-        exclude 'plugin.yml'
-        archiveName("DessieLib-${rootProject.version}-lib.jar")
-    }
+    exclude 'plugin.yml'
+    archiveName("DessieLib-${rootProject.version}-lib.jar")
 
-    // run shadow jar
-    dependsOn 'shadowJar'
+    from zipTree(shadowJar.getArchiveFile())
 }
 
 task copyJar(type: Copy) {
